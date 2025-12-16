@@ -3,12 +3,12 @@ from pypdf import PdfReader
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-import chromadb
 import ollama
+
+from app.rag.chroma_client import get_collection, persist
 
 
 DATA_DIR = Path("data/policies")
-CHROMA_DIR = Path("data/embeddings").resolve()
 
 
 def load_pdfs():
@@ -52,9 +52,7 @@ def ingest():
     # Ensure persistence directory exists and use PersistentClient for consistent access
     CHROMA_DIR.mkdir(parents=True, exist_ok=True)
 
-    client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-
-    collection = client.get_or_create_collection(name="policies")
+    collection = get_collection("policies")
 
     texts = [chunk.page_content for chunk in chunks]
     metadatas = [chunk.metadata for chunk in chunks]
@@ -69,10 +67,7 @@ def ingest():
         ids=ids,
     )
     # Persist to disk (PersistentClient should handle this, but call persist() to be explicit)
-    try:
-        client.persist()
-    except Exception:
-        pass
+    persist()
 
     print(f"Ingested {len(texts)} chunks into ChromaDB")
 

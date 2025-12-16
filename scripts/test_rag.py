@@ -1,16 +1,15 @@
 from pathlib import Path
-import chromadb
+import sys
 import ollama
 
-# Always resolve absolute path (Windows-safe)
-CHROMA_DIR = Path("data/embeddings").resolve()
+# Ensure project root is on sys.path so `app` imports work when running the script
+ROOT_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT_DIR))
 
-client = chromadb.PersistentClient(
-    path=str(CHROMA_DIR)
-)
+from app.rag.chroma_client import get_collection
 
-# IMPORTANT: use get_or_create_collection
-collection = client.get_or_create_collection("policies")
+# IMPORTANT: use centralized helper for collection
+collection = get_collection("policies")
 
 
 def embed_query(query, model="llama3.1"):
@@ -29,6 +28,6 @@ results = collection.query(
 
 print("Top retrieved chunks:\n")
 
-for doc in results["documents"][0]:
+for doc in results.get("documents", [[]])[0]:
     print("----")
-    print(doc[:300])
+    print((doc or "")[:300])
