@@ -1,12 +1,17 @@
+import re
+from app.agent_logger import log_step
+
+
 from app.intent_classifier import classify_intent
 from app.intent import Intent
 from app.rag.rag_answer import answer_question
 from app.tools.order_lookup import lookup_order
 from app.llm import get_llm
-import re
+
 
 
 def analyze_node(state):
+    log_step("analyze", state)
     query = state["query"]
 
     intent = classify_intent(query)
@@ -23,6 +28,7 @@ def analyze_node(state):
 
 
 def policy_node(state):
+    log_step("policy", state)
     result = answer_question(state["query"])
     return {
         **state,
@@ -31,6 +37,7 @@ def policy_node(state):
 
 
 def order_node(state):
+    log_step("order", state)
     match = re.search(r"(ORD\d+)", state["query"])
     order_id = match.group(1) if match else None
 
@@ -46,6 +53,7 @@ def order_node(state):
 
 
 def escalation_node(state):
+    log_step("escalation", state)
     return {
         **state,
         "response": "This issue has been escalated to a human support agent.",

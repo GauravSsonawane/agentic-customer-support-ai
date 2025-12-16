@@ -9,6 +9,19 @@ from app.agent_nodes import (
 from app.intent import Intent
 
 
+def route_from_analyze(state):
+    if state["escalate"]:
+        return "escalate"
+
+    if state["intent"] == Intent.POLICY:
+        return "policy"
+
+    if state["intent"] == Intent.ORDER_STATUS:
+        return "order"
+
+    return END
+
+
 def build_graph():
     workflow = StateGraph(AgentState)
 
@@ -21,15 +34,7 @@ def build_graph():
 
     workflow.add_conditional_edges(
         "analyze",
-        lambda s: (
-            "escalate"
-            if s["escalate"]
-            else "policy"
-            if s["intent"] == Intent.POLICY
-            else "order"
-            if s["intent"] == Intent.ORDER_STATUS
-            else END
-        ),
+        route_from_analyze
     )
 
     workflow.add_edge("policy", END)
@@ -37,4 +42,3 @@ def build_graph():
     workflow.add_edge("escalate", END)
 
     return workflow.compile()
-
