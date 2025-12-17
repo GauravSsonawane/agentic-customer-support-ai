@@ -20,7 +20,7 @@ def analyze_node(state):
     intent = classify_intent(query)
 
     # crude sentiment check (we’ll improve later)
-    angry_words = ["angry", "frustrated", "useless", "terrible"]
+    angry_words = ["angry", "frustrated", "useless", "terrible", "not happy", "disappointed", "very bad", "worst"]
     escalate = any(w in query.lower() for w in angry_words)
 
     return {

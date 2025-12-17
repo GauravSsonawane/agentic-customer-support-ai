@@ -1,0 +1,8 @@
+query,expected_intent,expected_action,expected_escalation
+"What is the return policy?",POLICY,rag,false
+"Can I return a damaged item?",POLICY,rag,false
+"I want a refund for my order ORD123",REFUND,refund,true
+"Where is my order ORD999?",ORDER_STATUS,order_lookup,false
+"My package is late and I'm angry",ORDER_STATUS,escalate,true
+"This service is terrible",OTHER,escalate,true
+"Hello",OTHER,none,false
