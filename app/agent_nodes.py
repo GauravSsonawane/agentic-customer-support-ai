@@ -1,5 +1,5 @@
 import re
-
+from app.observability import trace_event
 from langgraph.types import interrupt
 
 from app.agent_logger import log_step
@@ -12,16 +12,26 @@ from app.tools.order_lookup import lookup_order
 from app.llm import get_llm
 
 
-
 def analyze_node(state):
     log_step("analyze", state)
-    query = state["query"]
 
+    query = state["query"]
     intent = classify_intent(query)
 
-    # crude sentiment check (we’ll improve later)
-    angry_words = ["angry", "frustrated", "useless", "terrible", "not happy", "disappointed", "very bad", "worst"]
-    escalate = any(w in query.lower() for w in angry_words)
+    angry_phrases = [
+        "angry", "frustrated", "terrible", "useless", "not happy", "worst"
+    ]
+    escalate = any(p in query.lower() for p in angry_phrases)
+
+    trace_event(
+        event_type="analyze",
+        data={
+            "query": query,
+            "predicted_intent": intent.name,
+            "escalate": escalate,
+        },
+        thread_id=state.get("thread_id", "default"),
+    )
 
     return {
         **state,
@@ -32,11 +42,23 @@ def analyze_node(state):
 
 def policy_node(state):
     log_step("policy", state)
+
     result = answer_question(state["query"])
+
+    trace_event(
+        event_type="policy_rag",
+        data={
+            "query": state["query"],
+            "answer_preview": result["answer"][:200],
+        },
+        thread_id=state.get("thread_id", "default"),
+    )
+
     return {
         **state,
         "response": result["answer"],
     }
+
 
 
 def order_node(state):
@@ -65,13 +87,22 @@ def escalation_node(state):
 
 def refund_node(state):
     log_step("refund_request", state)
-    # Pause execution and wait for human approval using the langgraph helper.
-    # `interrupt` will raise the appropriate GraphInterrupt on first call
-    # and return the resume value when the graph is resumed.
+
+    trace_event(
+        event_type="refund_requested",
+        data={"query": state["query"]},
+        thread_id=state.get("thread_id", "default"),
+    )
+
     approval = interrupt("⚠ Refund requested. Awaiting admin approval.")
 
-    # This part runs ONLY after resume; expect `approval` to be truthy when approved
-    if approval or state.get("approved"):
+    trace_event(
+        event_type="refund_decision",
+        data={"approved": bool(approval)},
+        thread_id=state.get("thread_id", "default"),
+    )
+
+    if approval:
         return {
             **state,
             "response": "Refund approved. It will be processed shortly.",
@@ -81,4 +112,5 @@ def refund_node(state):
             **state,
             "response": "Refund request denied.",
         }
+
 
