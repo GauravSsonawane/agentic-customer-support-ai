@@ -1,3 +1,4 @@
+from app.checkpointer import checkpointer
 from langgraph.graph import StateGraph, END
 from app.agent_state import AgentState
 from app.agent_nodes import (
@@ -47,4 +48,4 @@ def build_graph():
     workflow.add_edge("escalate", END)
     workflow.add_edge("refund", END)
 
-    return workflow.compile()
+    return workflow.compile(checkpointer=checkpointer)
