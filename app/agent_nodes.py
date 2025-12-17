@@ -1,4 +1,7 @@
 import re
+
+from langgraph.types import interrupt
+
 from app.agent_logger import log_step
 
 
@@ -58,4 +61,24 @@ def escalation_node(state):
         **state,
         "response": "This issue has been escalated to a human support agent.",
     }
+
+
+def refund_node(state):
+    log_step("refund_request", state)
+    # Pause execution and wait for human approval using the langgraph helper.
+    # `interrupt` will raise the appropriate GraphInterrupt on first call
+    # and return the resume value when the graph is resumed.
+    approval = interrupt("⚠ Refund requested. Awaiting admin approval.")
+
+    # This part runs ONLY after resume; expect `approval` to be truthy when approved
+    if approval or state.get("approved"):
+        return {
+            **state,
+            "response": "Refund approved. It will be processed shortly.",
+        }
+    else:
+        return {
+            **state,
+            "response": "Refund request denied.",
+        }
 

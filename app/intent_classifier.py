@@ -9,6 +9,7 @@ def classify_intent(query: str) -> Intent:
 
     prompt = f"""
 Classify the user query into ONE of the following categories:
+- refund
 - policy
 - order_status
 - other
@@ -21,8 +22,10 @@ Query:
 
     llm = get_llm()
     response = llm.invoke(prompt).content.strip().lower()
-
-    if response == "policy":
+    
+    if response == "refund":
+            return Intent.REFUND
+    elif response == "policy":
         return Intent.POLICY
     elif response == "order_status":
         return Intent.ORDER_STATUS
