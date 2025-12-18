@@ -66,3 +66,12 @@ Question:
         "answer": response.content,
         "sources": context,
     }
+
+def is_weak_answer(answer: str) -> bool:
+    refusal_phrases = [
+        "I don't have enough information",
+        "I'm not sure",
+        "cannot determine",
+        "insufficient information",
+    ]
+    return any(p.lower() in answer.lower() for p in refusal_phrases)

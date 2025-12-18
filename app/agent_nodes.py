@@ -4,7 +4,7 @@ from langgraph.types import interrupt
 
 from app.agent_logger import log_step
 
-
+from app.llm_multi_intent_classifier import classify_multi_intent
 from app.intent_classifier import classify_intent
 from app.intent import Intent
 from app.rag.rag_answer import answer_question
@@ -12,32 +12,24 @@ from app.tools.order_lookup import lookup_order
 from app.llm import get_llm
 
 
+
 def analyze_node(state):
     log_step("analyze", state)
 
     query = state["query"]
-    intent = classify_intent(query)
 
-    angry_phrases = [
-        "angry", "frustrated", "terrible", "useless", "not happy", "worst"
-    ]
-    escalate = any(p in query.lower() for p in angry_phrases)
+    multi_intent = classify_multi_intent(query)
 
-    trace_event(
-        event_type="analyze",
-        data={
-            "query": query,
-            "predicted_intent": intent.name,
-            "escalate": escalate,
-        },
-        thread_id=state.get("thread_id", "default"),
-    )
+
 
     return {
         **state,
-        "intent": intent,
-        "escalate": escalate,
+        "intents": multi_intent.intents,
+        "intent": multi_intent.chosen_intent,
+        "intent_reason": multi_intent.reason,
+        "escalate": multi_intent.chosen_intent.name == "REFUND",
     }
+
 
 
 def policy_node(state):

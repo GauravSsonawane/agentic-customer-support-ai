@@ -1,38 +1,64 @@
-import re
-
+from app.intent_schema import IntentLabel
 from app.intent_classifier import classify_intent
-from app.intent import Intent
 from app.rag.rag_answer import answer_question
 from app.tools.order_lookup import lookup_order
-
+from app.rag.rag_answer import answer_question, is_weak_answer
 
 def route_query(query: str) -> dict:
-    intent = classify_intent(query)
+    intent_result = classify_intent(query)
 
-    if intent == Intent.POLICY:
-        return {
-            "intent": intent,
-            "result": answer_question(query),
+    intent = intent_result.intent
+    confidence = intent_result.confidence
+
+    if intent == IntentLabel.POLICY:
+
+        rag_result = answer_question(query)
+        answer = rag_result["answer"]
+
+        if is_weak_answer(answer):
+            return {
+            "intent": intent_result,
+            "result": (
+                "I found some relevant policy information, but I’m not confident "
+                "enough to give a precise answer. Would you like me to escalate this "
+                "to a human agent?"
+            ),
+            "sources": rag_result["sources"],
+            "confidence": 0.3,
+            "decision": "refused_low_confidence",
         }
 
-    elif intent == Intent.ORDER_STATUS:
-        # naive order id extraction for now
-        match = re.search(r"(ORD\d+)", query)
-        order_id = match.group(1) if match else None
+        return {
+            "intent": intent_result,
+            "result": rag_result["answer"],
+            "sources": rag_result["sources"],
+            "confidence": 0.9,
+            "decision": "answered_from_policy",
+            }
+
+
+    elif intent == IntentLabel.ORDER_STATUS:
+        order_id = next((w for w in query.split() if w.startswith("ORD")), None)
 
         if not order_id:
             return {
-                "intent": intent,
+                "intent": intent_result,
                 "result": "Please provide your order ID.",
             }
 
         return {
-            "intent": intent,
+            "intent": intent_result,
             "result": lookup_order(order_id),
+        }
+
+    elif intent == IntentLabel.REFUND:
+        return {
+            "intent": intent_result,
+            "result": "Refund request requires approval.",
         }
 
     else:
         return {
-            "intent": intent,
+            "intent": intent_result,
             "result": "I can help with order status or return policies.",
         }

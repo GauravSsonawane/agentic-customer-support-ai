@@ -10,3 +10,34 @@
 {"timestamp": "2025-12-17T06:18:23.156917", "event": "refund_requested", "data": {"query": "I want a refund for my order ORD123"}}
 {"timestamp": "2025-12-17T06:18:23.165342", "event": "refund_requested", "data": {"query": "I want a refund for my order ORD123"}}
 {"timestamp": "2025-12-17T06:18:23.166240", "event": "refund_decision", "data": {"approved": true}}
+{"timestamp": "2025-12-17T06:31:17.358638", "event": "analyze", "data": {"query": "Hello", "predicted_intent": "OTHER", "escalate": false}}
+{"timestamp": "2025-12-17T06:32:43.607109", "event": "analyze", "data": {"query": "Hi there", "predicted_intent": "OTHER", "escalate": false}}
+{"timestamp": "2025-12-17T06:32:57.824012", "event": "analyze", "data": {"query": "Good Morning", "predicted_intent": "OTHER", "escalate": false}}
+{"timestamp": "2025-12-17T06:33:09.390427", "event": "analyze", "data": {"query": "How are you ?", "predicted_intent": "OTHER", "escalate": false}}
+{"timestamp": "2025-12-17T06:33:29.378500", "event": "analyze", "data": {"query": "What is the return policy?", "predicted_intent": "POLICY", "escalate": false}}
+{"timestamp": "2025-12-17T06:33:47.627577", "event": "policy_rag", "data": {"query": "What is the return policy?", "answer_preview": "I don't have enough information to answer that."}}
+{"timestamp": "2025-12-17T06:34:01.802336", "event": "analyze", "data": {"query": "Is there a refund for inspect and buy items?", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:34:01.803342", "event": "refund_requested", "data": {"query": "Is there a refund for inspect and buy items?"}}
+{"timestamp": "2025-12-17T06:34:34.157738", "event": "analyze", "data": {"query": "Are customized products returnable?", "predicted_intent": "POLICY", "escalate": false}}
+{"timestamp": "2025-12-17T06:34:53.405119", "event": "policy_rag", "data": {"query": "Are customized products returnable?", "answer_preview": "Non-returnable due to customization. Refund applicable for damage or wrong customization."}}
+{"timestamp": "2025-12-17T06:35:19.721387", "event": "analyze", "data": {"query": "How many days do I have to return an item?", "predicted_intent": "POLICY", "escalate": false}}
+{"timestamp": "2025-12-17T06:35:40.269645", "event": "policy_rag", "data": {"query": "How many days do I have to return an item?", "answer_preview": "I don't have enough information to answer that."}}
+{"timestamp": "2025-12-17T06:36:03.363925", "event": "analyze", "data": {"query": "Can I return a damaged product?", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:36:03.365498", "event": "refund_requested", "data": {"query": "Can I return a damaged product?"}}
+{"timestamp": "2025-12-17T06:36:15.018385", "event": "analyze", "data": {"query": "Where is my order ORD123?", "predicted_intent": "ORDER_STATUS", "escalate": false}}
+{"timestamp": "2025-12-17T06:36:26.960856", "event": "analyze", "data": {"query": "Check status of ORD999", "predicted_intent": "ORDER_STATUS", "escalate": false}}
+{"timestamp": "2025-12-17T06:36:36.578180", "event": "analyze", "data": {"query": "What happened to my order ORD001?", "predicted_intent": "ORDER_STATUS", "escalate": false}}
+{"timestamp": "2025-12-17T06:36:52.560548", "event": "analyze", "data": {"query": "I want a refund for my order ORD123", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:36:52.561839", "event": "refund_requested", "data": {"query": "I want a refund for my order ORD123"}}
+{"timestamp": "2025-12-17T06:37:04.300589", "event": "analyze", "data": {"query": "Please refund my order ORD001", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:37:04.301601", "event": "refund_requested", "data": {"query": "Please refund my order ORD001"}}
+{"timestamp": "2025-12-17T06:37:18.370197", "event": "analyze", "data": {"query": "I need my money back for order ORD999", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:37:18.372325", "event": "refund_requested", "data": {"query": "I need my money back for order ORD999"}}
+{"timestamp": "2025-12-17T06:37:35.672196", "event": "analyze", "data": {"query": "I am very angry about my order", "predicted_intent": "OTHER", "escalate": true}}
+{"timestamp": "2025-12-17T06:37:51.189877", "event": "analyze", "data": {"query": "This service is terrible", "predicted_intent": "OTHER", "escalate": true}}
+{"timestamp": "2025-12-17T06:38:00.976169", "event": "analyze", "data": {"query": "I'm frustrated, my order is late", "predicted_intent": "ORDER_STATUS", "escalate": true}}
+{"timestamp": "2025-12-17T06:38:09.319518", "event": "analyze", "data": {"query": "Worst experience ever", "predicted_intent": "OTHER", "escalate": true}}
+{"timestamp": "2025-12-17T06:38:23.108516", "event": "analyze", "data": {"query": "Where is my order?", "predicted_intent": "ORDER_STATUS", "escalate": false}}
+{"timestamp": "2025-12-17T06:38:34.819315", "event": "analyze", "data": {"query": "Refund please", "predicted_intent": "REFUND", "escalate": false}}
+{"timestamp": "2025-12-17T06:38:34.820888", "event": "refund_requested", "data": {"query": "Refund please"}}
+{"timestamp": "2025-12-17T06:38:41.849272", "event": "analyze", "data": {"query": "Return", "predicted_intent": "OTHER", "escalate": false}}

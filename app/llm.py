@@ -10,10 +10,16 @@ class _OllamaWrapper:
         self.client = ollama.Client(host=base_url) if base_url else ollama.Client()
 
     def invoke(self, prompt: str):
+        # Accept either a raw prompt string or a pre-built list of message dicts
+        if isinstance(prompt, (list, tuple)):
+            messages = list(prompt)
+        else:
+            messages = [{"role": "user", "content": prompt}]
+
         # Use the `chat` API and wrap the response to match expected interface
         resp = self.client.chat(
             model=self.model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             options={"temperature": self.temperature} if self.temperature is not None else None,
         )
 
