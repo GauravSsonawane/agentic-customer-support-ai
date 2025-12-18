@@ -1,61 +1,150 @@
 import streamlit as st
 import sys
 from pathlib import Path
+import requests
 
-# Add project root to PYTHONPATH
+# -------------------------------
+# Setup PYTHONPATH
+# -------------------------------
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
-from app.agent_graph import build_graph
+# -------------------------------
+# Backend API URL (Async boundary)
+# -------------------------------
+API_URL = "http://localhost:8000/query"
 
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT_DIR))
+def normalize_intent(intent):
+    """
+    Normalizes intent to a UI-safe dict
+    """
+    if intent is None:
+        return None
 
-from app.agent_graph import build_graph
+    # LLM intent object
+    if hasattr(intent, "intent"):
+        return {
+            "label": intent.intent.value,
+            "confidence": intent.confidence,
+            "reason": intent.reason,
+        }
 
-st.set_page_config(page_title="Agentic Customer Support AI", layout="centered")
+    # Enum intent
+    if hasattr(intent, "value"):
+        return {
+            "label": intent.value,
+            "confidence": "N/A",
+            "reason": "Rule-based routing",
+        }
+
+    # String intent
+    if isinstance(intent, str):
+        return {
+            "label": intent,
+            "confidence": "N/A",
+            "reason": "Backend fallback",
+        }
+
+    return None
+
+
+# -------------------------------
+# Streamlit Page Config
+# -------------------------------
+st.set_page_config(
+    page_title="Agentic Customer Support AI",
+    layout="centered",
+)
 
 st.title("🤖 Agentic Customer Support AI")
 st.caption("LangGraph • RAG • Human-in-the-Loop • Persistent State")
 
-graph = build_graph()
-
-# session-scoped thread_id
+# -------------------------------
+# Session state
+# -------------------------------
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = "ui-thread-001"
 
+if "response" not in st.session_state:
+    st.session_state.response = None
+
+# -------------------------------
+# User input
+# -------------------------------
 query = st.text_input("Ask a question:")
 
 if st.button("Submit") and query:
-    state = {
+    payload = {
         "query": query,
-        "intent": None,
-        "response": None,
-        "escalate": False,
         "thread_id": st.session_state.thread_id,
     }
 
     try:
-        result = graph.invoke(
-            state,
-            config={"configurable": {"thread_id": st.session_state.thread_id}},
-        )
+        with st.spinner("Thinking..."):
+            resp = requests.post(
+                API_URL,
+                json=payload,
+                timeout=60,
+            )
 
+        if resp.status_code != 200:
+            st.error("Backend error")
+            st.stop()
+
+        result = resp.json()
+
+        # ---------------------------
+        # Human-in-the-loop
+        # ---------------------------
         if "__interrupt__" in result:
             st.warning("⚠ Human approval required")
-            st.info(result["__interrupt__"][0].value)
+            st.info(result["__interrupt__"][0]["value"])
 
             if st.button("Approve Refund"):
-                interrupt_id = result["__interrupt__"][0].id
-                resumed = graph.resume(
-                    interrupt_id,
-                    True,
-                    config={"configurable": {"thread_id": st.session_state.thread_id}},
-                )
-                st.success(resumed["response"])
-        else:
-            st.success(result["response"])
+                approve_payload = {
+                    "thread_id": st.session_state.thread_id,
+                    "approved": True,
+                }
 
-    except Exception as e:
-        st.error(str(e))
+                resumed = requests.post(
+                    f"{API_URL}/resume",
+                    json=approve_payload,
+                    timeout=60,
+                ).json()
+
+                st.session_state.response = resumed
+        else:
+            st.session_state.response = result
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"API error: {e}")
+
+# -------------------------------
+# Render assistant response
+# -------------------------------
+if st.session_state.response:
+    response = st.session_state.response
+
+    st.markdown("### 🤖 Assistant")
+    st.write(response.get("result") or response.get("response"))
+
+    # ---------------------------
+    # Explainability Panel
+    # ---------------------------
+    with st.expander("🔍 Why this answer?"):
+        with st.expander("🔍 Why this answer?"):
+            intent_info = normalize_intent(response.get("intent"))
+
+            if intent_info:
+                st.markdown(f"**Intent:** `{intent_info['label']}`")
+                st.markdown(f"**Confidence:** `{intent_info['confidence']}`")
+                st.markdown(f"**Reason:** {intent_info['reason']}")
+
+            if "decision" in response:
+                st.markdown(f"**Decision:** `{response['decision']}`")
+
+            if "sources" in response and response["sources"]:
+                st.markdown("**Sources used:**")
+                st.code(response["sources"])
+

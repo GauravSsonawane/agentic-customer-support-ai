@@ -1,43 +1,46 @@
-from pathlib import Path
+import asyncio
 import ollama
 
 from app.llm import get_llm
 from app.config import OLLAMA_MODEL
 from app.rag.chroma_client import get_collection
 
-# Load persistent Chroma DB via centralized helper
+# Persistent Chroma collection
 collection = get_collection("policies")
 
 
-def retrieve_context(query: str, k: int = 3) -> str:
+# ------------------------------------------------
+# ASYNC: Retrieve context from Chroma
+# ------------------------------------------------
+async def retrieve_context_async(query: str, k: int = 3) -> str:
     """
-    Retrieve top-k relevant chunks from Chroma
+    Async wrapper around embedding + Chroma query.
+    Runs blocking IO in a thread executor.
     """
-    # Compute query embedding via Ollama to avoid Chroma's default ONNX download
-    try:
-        q_emb = ollama.embeddings(model=OLLAMA_MODEL, prompt=query)["embedding"]
+    loop = asyncio.get_running_loop()
+
+    def _embed_and_query():
+        # Compute embedding via Ollama
+        embedding = ollama.embeddings(
+            model=OLLAMA_MODEL,
+            prompt=query,
+        )["embedding"]
+
         results = collection.query(
-            query_embeddings=[q_emb],
+            query_embeddings=[embedding],
             n_results=k,
         )
-        documents = results["documents"][0]
-    except Exception:
-        # Fallback to text-based query (may trigger ONNX download)
-        results = collection.query(
-            query_texts=[query],
-            n_results=k,
-        )
-        documents = results["documents"][0]
 
-    context = "\n\n".join(documents)
-    return context
+        return "\n\n".join(results["documents"][0])
+
+    return await loop.run_in_executor(None, _embed_and_query)
 
 
-def answer_question(query: str) -> dict:
-    """
-    Generate a grounded answer using retrieved context
-    """
-    context = retrieve_context(query)
+# ------------------------------------------------
+# ASYNC: Generate grounded answer
+# ------------------------------------------------
+async def answer_question_async(query: str) -> dict:
+    context = await retrieve_context_async(query)
 
     prompt = f"""
 You are a customer support assistant.
@@ -59,7 +62,12 @@ Question:
 """
 
     llm = get_llm()
-    response = llm.invoke(prompt)
+    loop = asyncio.get_running_loop()
+
+    response = await loop.run_in_executor(
+        None,
+        lambda: llm.invoke(prompt)
+    )
 
     return {
         "question": query,
@@ -67,11 +75,25 @@ Question:
         "sources": context,
     }
 
+
+# ------------------------------------------------
+# SYNC WRAPPER (Backwards compatible)
+# ------------------------------------------------
+def answer_question(query: str) -> dict:
+    """
+    Sync wrapper so existing code does NOT break.
+    """
+    return asyncio.run(answer_question_async(query))
+
+
+# ------------------------------------------------
+# Confidence helper (unchanged)
+# ------------------------------------------------
 def is_weak_answer(answer: str) -> bool:
     refusal_phrases = [
-        "I don't have enough information",
-        "I'm not sure",
+        "i don't have enough information",
+        "i'm not sure",
         "cannot determine",
         "insufficient information",
     ]
-    return any(p.lower() in answer.lower() for p in refusal_phrases)
+    return any(p in answer.lower() for p in refusal_phrases)
