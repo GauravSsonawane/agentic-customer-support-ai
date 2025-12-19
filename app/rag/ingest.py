@@ -1,5 +1,12 @@
 from pathlib import Path
+import sys
 from pypdf import PdfReader
+
+# Ensure project root is on sys.path when running this file directly
+# so `from app...` imports work (allows `python app/rag/ingest.py`).
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
@@ -16,19 +23,26 @@ def load_pdfs():
 
     for pdf_path in DATA_DIR.glob("*.pdf"):
         reader = PdfReader(pdf_path)
-        text = ""
 
-        for page in reader.pages:
-            text += page.extract_text() or ""
+        for page_num, page in enumerate(reader.pages):
+            text = page.extract_text() or ""
+            text = text.strip()
 
-        documents.append(
-            Document(
-                page_content=text,
-                metadata={"source": pdf_path.name}
+            if not text:
+                continue
+
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={
+                        "source": pdf_path.name,
+                        "page": page_num,
+                    }
+                )
             )
-        )
 
     return documents
+
 
 
 def embed_texts(texts, model="llama3.1"):
@@ -43,14 +57,19 @@ def ingest():
     docs = load_pdfs()
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=100,
+        chunk_size=400,
+        chunk_overlap=60,
+        separators=[
+            "\n\n",   # paragraphs / sections
+            "\n",     # line breaks
+            ".",      # sentences
+            " ",      # words (last resort)
+        ],
     )
 
     chunks = splitter.split_documents(docs)
 
-    # Ensure persistence directory exists and use PersistentClient for consistent access
-    CHROMA_DIR.mkdir(parents=True, exist_ok=True)
+
 
     collection = get_collection("policies")
 
