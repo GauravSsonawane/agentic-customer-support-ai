@@ -469,98 +469,57 @@ if submit_button and query:
                 st.stop()
             
             result = resp.json()
-            
-            if "__interrupt__" in result:
+            intent_info = normalize_intent(result.get("intent"))
+
+            # -------------------------------
+            # Escalation vs Normal Response
+            # -------------------------------
+            if result.get("escalate") is True:
                 status.update(label="⚠️ Human intervention required", state="error")
-                
-                # Special handling for refund requests
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": "⚠️ **Refund Request Detected**\n\nA refund has been requested and requires approval.",
-                    "meta": {"intent": "refund", "decision": "Awaiting approval"},
-                })
-                
-                # Enhanced approval UI
-                st.markdown("---")
-                st.warning("**🔔 Human-in-the-Loop Intervention Required**")
-                
-                approval_col1, approval_col2 = st.columns([2, 1])
-                
-                with approval_col1:
-                    st.info("""
-                    **Request Details:**
-                    - Type: Refund Request
-                    - Status: Pending Approval
-                    - Thread ID: `{}`
-                    - Requires manual review
-                    """.format(st.session_state.thread_id))
-                
-                with approval_col2:
-                    st.markdown("<br>" * 2, unsafe_allow_html=True)
-                    if st.button("✅ **Approve Refund**", type="primary", use_container_width=True):
-                        approve_payload = {
-                            "thread_id": st.session_state.thread_id,
-                            "approved": True,
-                        }
-                        
-                        with st.spinner("Processing approval..."):
-                            resumed = requests.post(
-                                f"{API_URL}/resume",
-                                json=approve_payload,
-                                timeout=60,
-                            ).json()
-                        
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": f"✅ **Approved:** {resumed.get('response')}",
-                            "meta": {"intent": "refund", "decision": "Approved"},
-                        })
-                        st.rerun()
-                    
-                    if st.button("❌ **Deny Refund**", type="secondary", use_container_width=True):
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": "❌ Refund request has been denied.",
-                            "meta": {"intent": "refund", "decision": "Denied"},
-                        })
-                        st.rerun()
-            
-            else:
-                intent_info = normalize_intent(result.get("intent"))
 
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": result.get("result") or result.get("response"),
+                    "content": "⚠️ This issue has been escalated to a human support agent.",
                     "meta": {
-                        "intent": intent_info,        # 👈 KEEP OBJECT
+                        "intent": intent_info,
                         "decision": result.get("decision"),
-                        "sources": result.get("sources"),
                     },
                 })
 
+                st.rerun()
+
+            else:
+                assistant_text = (
+                    result.get("final_answer")
+                    or result.get("result")
+                    or result.get("response")
+                    or "⚠️ No response generated."
+                )
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": assistant_text,
+                    "meta": {
+                        "intent": intent_info,
+                        "decision": result.get("decision"),
+                        "sources": result.get("sources"),
+                        "confidence": result.get("confidence"),
+                    },
+                })
 
                 status.update(label="✅ Response generated!", state="complete")
-                st.success("Response added to conversation!")
-        
-        except requests.exceptions.RequestException as e:
-            status.update(label="❌ Connection failed", state="error")
-            st.error(f"API connection error: {str(e)}")
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": f"⚠️ **Connection Error:** Unable to reach the backend server. Please check if the API is running at {API_URL}",
-                "meta": {"error": str(e)},
-            })
-        
+                st.rerun()
         except Exception as e:
-            status.update(label="❌ Unexpected error", state="error")
-            st.error(f"Unexpected error: {str(e)}")
+            status.update(label="❌ Error", state="error")
+            st.error(f"An error occurred while processing your request: {e}")
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": f"⚠️ **System Error:** {str(e)}",
+                "content": "⚠️ An error occurred while processing your request.",
                 "meta": {"error": str(e)},
             })
-    
-    st.rerun()
+            # Re-raise or stop to avoid inconsistent state; use st.rerun to refresh UI
+            st.rerun()
+
 
 # -------------------------------
 # Footer

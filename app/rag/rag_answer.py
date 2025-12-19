@@ -12,7 +12,7 @@ collection = get_collection("policies")
 # ------------------------------------------------
 # ASYNC: Retrieve context from Chroma
 # ------------------------------------------------
-async def retrieve_context_async(query: str, k: int = 3) -> str:
+async def retrieve_context_async(query: str, k: int = 5) -> str:
     """
     Async wrapper around embedding + Chroma query.
     Runs blocking IO in a thread executor.
@@ -30,6 +30,10 @@ async def retrieve_context_async(query: str, k: int = 3) -> str:
             query_embeddings=[embedding],
             n_results=k,
         )
+
+        print("🔍 Retrieved chunks:")
+        for d in results["documents"][0]:
+            print("-", d[:120])
 
         return "\n\n".join(results["documents"][0])
 
@@ -50,9 +54,10 @@ RULES (must follow strictly):
 - Do NOT add general knowledge.
 - Do NOT add explanations.
 - Do NOT add suggestions.
-- If the context does not fully answer the question, reply with EXACTLY:
-"I don't have enough information to answer that."
-- Do not say anything else after that sentence.
+- If the context is related but does not give a complete answer,
+  provide the best possible answer strictly from the context.
+- ONLY if the context is completely unrelated, reply with EXACTLY:
+  "I don't have enough information to answer that question."
 
 Context:
 {context}
@@ -69,10 +74,13 @@ Question:
         lambda: llm.invoke(prompt)
     )
 
+    answer = response.content.strip()
+
     return {
         "question": query,
-        "answer": response.content,
+        "answer": answer,
         "sources": context,
+        "is_weak": is_weak_answer(answer),
     }
 
 
@@ -89,11 +97,22 @@ def answer_question(query: str) -> dict:
 # ------------------------------------------------
 # Confidence helper (unchanged)
 # ------------------------------------------------
+
 def is_weak_answer(answer: str) -> bool:
+    """
+    Returns True ONLY when the model explicitly refuses
+    or produces an empty response.
+    """
+    if not answer or not answer.strip():
+        return True
+
     refusal_phrases = [
         "i don't have enough information",
+        "i am not sure",
         "i'm not sure",
         "cannot determine",
         "insufficient information",
     ]
-    return any(p in answer.lower() for p in refusal_phrases)
+
+    answer_lower = answer.lower()
+    return any(p in answer_lower for p in refusal_phrases)

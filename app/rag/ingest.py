@@ -57,8 +57,8 @@ def ingest():
     docs = load_pdfs()
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=60,
+        chunk_size=800,
+        chunk_overlap=150,
         separators=[
             "\n\n",   # paragraphs / sections
             "\n",     # line breaks
@@ -69,6 +69,17 @@ def ingest():
 
     chunks = splitter.split_documents(docs)
 
+    for chunk in chunks:
+        text = chunk.page_content.lower()
+
+        if "return" in text:
+            chunk.metadata["topic"] = "return"
+        if "refund" in text:
+            chunk.metadata["topic"] = "refund"
+        if "damage" in text or "damaged" in text or "defective" in text:
+            chunk.metadata["topic"] = "damage"
+
+        chunk.metadata["doc_type"] = "policy"
 
 
     collection = get_collection("policies")
