@@ -1,0 +1,13 @@
+question,answer,decision,escalate,confidence
+Can I return a product if it arrives damaged?,"Yes. If the product is received damaged, you can return it within the applicable return window.",policy_answered,False,0.9
+What is your return policy for damaged items?,"For devices like Smartphones, Laptops, TVs, ACs, Refrigerators, etc., a technician visit may be scheduled based on service availability.",policy_answered,False,0.9
+Can I return a product with missing accessories?,"Yes, you can return a product if it was received with missing parts/accessories.",policy_answered,False,0.9
+What if the product I received is different from its description?,"Applicable products are returnable within the applicable return window if received damaged, defective, missing parts/accessories, or different from description.",policy_answered,False,0.9
+Are defective products eligible for return?,"Yes. Eligible for return if received damaged, defective...",policy_answered,False,0.9
+Can international orders be returned?,All product categories are non-returnable for international export orders.,policy_answered,False,0.9
+Can I get a refund for a damaged item?,"Yes. If the item is received in a damaged condition, you can report it within 5 days of delivery and request a refund.",refund_policy_answered,False,0.85
+I want a refund for my order,I understand you want to initiate a refund. This requires approval from a human support agent.,refund_requires_approval,True,0.98
+Please process my refund,I understand you want to initiate a refund. This requires approval from a human support agent.,refund_requires_approval,True,0.99
+Can I return it?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,False,0.5
