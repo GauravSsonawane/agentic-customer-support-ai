@@ -55,13 +55,17 @@ def query(payload: dict):
     # --------------------------------------------------
     try:
         if state.get("pending_clarification") and state.get("clarification_question"):
-            combined_query = (
-                f"{state['clarification_question']} "
-                f"The item details are: {query_text}"
+            # 🔑 Keep the ORIGINAL question
+            clarified_query = state["clarification_question"]
+
+            # 🔑 Pass clarification separately as context
+            result = route_query(
+                clarified_query,
+                extra_context=f"User clarified that the product was: {query_text}"
             )
-            result = route_query(combined_query)
         else:
             result = route_query(query_text)
+
     except Exception as e:
         # Keep a minimal, UI-friendly response shape and log the error server-side.
         # The UI will show a generic error but we keep logs for debugging.

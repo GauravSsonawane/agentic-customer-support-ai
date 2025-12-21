@@ -44,7 +44,8 @@ def is_refund_question(query: str) -> bool:
     # Default: treat ambiguous refund queries as questions first
     return True
 
-def route_query(query: str) -> dict:
+def route_query(query: str, extra_context: str | None = None) -> dict:
+
     """
     Clean, confidence-aware router.
     Returns a unified response schema for UI + API.
