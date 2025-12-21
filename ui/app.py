@@ -334,10 +334,15 @@ else:
                     with st.expander("🔍 **View Analysis Details**", expanded=False):
                         meta = msg["meta"]
                         
-                        # Intent with colored tag
-                        if meta.get("intent"):
-                            intent_label = meta["intent"]["label"] if isinstance(meta["intent"], dict) else meta["intent"]
-                            intent_color = get_intent_color(intent_label)                    
+                        intent_label = None
+                        if isinstance(meta.get("intent"), dict):
+                            intent_label = meta["intent"].get("label")
+                        elif isinstance(meta.get("intent"), str):
+                            intent_label = meta["intent"]
+
+                        # 🔒 SAFETY CHECK (THIS IS THE IMPORTANT PART)
+                        if intent_label:
+                            intent_color = get_intent_color(intent_label)
                             st.markdown(f"""
                             <div style="background: {intent_color}20; padding: 0.75rem; 
                                         border-radius: 8px; border-left: 4px solid {intent_color}; 
@@ -354,14 +359,14 @@ else:
                                     </div>
                                 </div>
                             </div>
-                            """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)                   
                         
                         # Confidence and reason in columns
                         if meta.get("confidence") or meta.get("reason"):
                             col_a, col_b = st.columns(2)
                             
                             with col_a:
-                                if meta.get("confidence"):
+                                if meta.get("confidence") is not None:
                                     st.metric("Confidence Score", meta["confidence"])
                             
                             with col_b:
@@ -373,18 +378,21 @@ else:
                             st.success(f"**Decision Made:** {meta['decision']}")
                         
                         # Sources with copy button
-                        if meta.get("sources"):
+                        sources = meta.get("sources")
+
+                        if isinstance(sources, str) and sources.strip():
                             st.markdown("**📚 Sources Used:**")
-                            if isinstance(meta["sources"], str):
-                                # Add copy button
-                                copy_col, view_col = st.columns([3, 1])
-                                with copy_col:
-                                    st.code(meta["sources"], language="json")
-                                with view_col:
-                                    if st.button("📋 Copy", key=f"copy_{i}"):
-                                        st.toast("Copied to clipboard!", icon="✅")
-                                        st.code(meta["sources"])  # This would need pyperclip for actual copy
+
+                            # Add copy button
+                            copy_col, view_col = st.columns([3, 1])
+                            with copy_col:
+                                st.code(sources)
+                            with view_col:
+                                if st.button("📋 Copy", key=f"copy_{i}"):
+                                    st.toast("Copied to clipboard!", icon="✅")
+
                         st.markdown("---")
+
         
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -489,12 +497,9 @@ if submit_button and query:
                 st.rerun()
 
             else:
-                assistant_text = (
-                    result.get("final_answer")
-                    or result.get("result")
-                    or result.get("response")
-                    or "⚠️ No response generated."
-                )
+                assistant_text = result.get("final_answer")
+                if not assistant_text:
+                    assistant_text = "⚠️ No response generated."
 
                 st.session_state.messages.append({
                     "role": "assistant",
@@ -503,7 +508,7 @@ if submit_button and query:
                         "intent": intent_info,
                         "decision": result.get("decision"),
                         "sources": result.get("sources"),
-                        "confidence": result.get("confidence"),
+                        "confidence": result.get("confidence", "N/A"),
                     },
                 })
 

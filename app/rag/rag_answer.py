@@ -1,9 +1,12 @@
 import asyncio
+import logging
 import ollama
 
 from app.llm import get_llm
 from app.config import OLLAMA_MODEL
 from app.rag.chroma_client import get_collection
+
+logger = logging.getLogger(__name__)
 
 # Persistent Chroma collection
 collection = get_collection("policies")
@@ -20,22 +23,30 @@ async def retrieve_context_async(query: str, k: int = 5) -> str:
     loop = asyncio.get_running_loop()
 
     def _embed_and_query():
-        # Compute embedding via Ollama
-        embedding = ollama.embeddings(
-            model=OLLAMA_MODEL,
-            prompt=query,
-        )["embedding"]
+        try:
+            # Compute embedding via Ollama
+            embedding = ollama.embeddings(
+                model=OLLAMA_MODEL,
+                prompt=query,
+           )["embedding"]
 
-        results = collection.query(
-            query_embeddings=[embedding],
-            n_results=k,
-        )
+            results = collection.query(
+                query_embeddings=[embedding],
+                n_results=k,
+            )
 
-        print("🔍 Retrieved chunks:")
-        for d in results["documents"][0]:
-            print("-", d[:120])
+            # Log a compact preview of retrieved chunks for debugging
+            docs = results.get("documents", [[]])[0]
+            logger.debug("Retrieved %d chunks for query", len(docs))
+            for d in docs:
+                preview = (d[:120] + "...") if len(d) > 120 else d
+                logger.debug("- %s", preview.replace("\n", " "))
 
-        return "\n\n".join(results["documents"][0])
+            return "\n\n".join(docs)
+        except Exception as e:
+            logger.exception("Error during embedding or Chroma query")
+            # Return empty context so downstream code can handle gracefully
+            return ""
 
     return await loop.run_in_executor(None, _embed_and_query)
 
@@ -69,19 +80,28 @@ Question:
     llm = get_llm()
     loop = asyncio.get_running_loop()
 
-    response = await loop.run_in_executor(
-        None,
-        lambda: llm.invoke(prompt)
-    )
+    try:
+        response = await loop.run_in_executor(
+            None,
+            lambda: llm.invoke(prompt)
+        )
 
-    answer = response.content.strip()
+        answer = response.content.strip()
 
-    return {
-        "question": query,
-        "answer": answer,
-        "sources": context,
-        "is_weak": is_weak_answer(answer),
-    }
+        return {
+            "question": query,
+            "answer": answer,
+            "sources": context,
+            "is_weak": is_weak_answer(answer),
+        }
+    except Exception:
+        logger.exception("LLM invocation failed for query: %s", query)
+        return {
+            "question": query,
+            "answer": "",
+            "sources": context,
+            "is_weak": True,
+        }
 
 
 # ------------------------------------------------
