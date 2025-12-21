@@ -1,0 +1,151 @@
+id,query,final_answer,decision,intent,confidence,escalate
+1,Can I return an item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+2,What is your return policy?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case'}",0.5,False
+3,How many days do I have to return a product?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+4,Can I exchange an item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+5,Are all products returnable?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+6,Can I return a damaged item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default policy intent classification'}",0.5,False
+7,What if my item arrived damaged?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+8,Is replacement available for defective products?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+9,Can I get a refund for a damaged product?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default policy intent classification for unknown inputs'}",0.5,False
+10,Are damaged items eligible for free replacement?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+11,Can I return a phone?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+12,What is the return policy for mobile phones?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case, intent classification successful'}",0.5,False
+13,Can I replace a defective smartphone?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+14,Are phones eligible for replacement?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+15,What is the return window for electronics?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown or irrelevant messages'}",0.5,False
+16,Can I return an Amazon device?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default policy intent classification for unknown inputs'}",0.5,False
+17,Are digital devices returnable?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown or irrelevant input'}",0.5,False
+18,What is the policy for Echo devices?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+19,Can I return a phone after using it?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+20,Are electronic items refundable?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+21,Can I return it?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown or invalid input'}",0.5,False
+22,It was a phone,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+23,Can I return a damaged item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+24,It arrived yesterday,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+25,Is my item eligible for return?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default policy intent classification for unknown inputs'}",0.5,False
+26,It is an electronic device,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+27,Can I replace my order?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case'}",0.5,False
+28,It is defective,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown inputs'}",0.5,False
+29,Is return possible?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+30,It was delivered 5 days ago,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+31,Please process my refund.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case for policy intent classification'}",0.5,False
+32,I want my money back.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+33,Initiate a refund for my order.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default policy intent classification for unknown inputs'}",0.5,False
+34,Cancel my order and refund me.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case, intent classification successful'}",0.5,False
+35,I demand a refund now.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+36,I want to talk to a human.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+37,Connect me to customer support.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+38,Refund my order immediately.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case, intent classification successful'}",0.5,False
+39,I want to escalate this issue.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+40,Raise a complaint and refund my order.,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case 001, intent classification successful'}",0.5,False
+41,Can I return a wrong item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case 001, default intent classification to POLICY'}",0.5,False
+42,What if the product is not as described?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown input'}",0.5,False
+43,Is free replacement available?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Test case'}",0.5,False
+44,Can I exchange a damaged phone?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Direct question about return policy'}",0.5,False
+45,What if I miss the return window?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 1.0, 'reason': 'Default intent classification for unknown or irrelevant messages'}",0.5,False
+46,Is refund possible after replacement?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+47,Do you allow refunds or only replacements?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+48,Is return allowed after delivery?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+49,Can I return an opened item?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False
+50,Are customized items returnable?,"I don't have enough information to answer that question.
+
+Could you please provide a bit more detail (for example, product type or delivery date)?",policy_needs_clarification,"{'intent': 'POLICY', 'confidence': 0.95, 'reason': 'Asks directly about return policy'}",0.5,False

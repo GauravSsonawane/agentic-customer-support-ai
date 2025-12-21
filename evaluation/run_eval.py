@@ -1,79 +1,59 @@
 import csv
-from pathlib import Path
-import sys
+import requests
+import time
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT_DIR))
+API_URL = "http://127.0.0.1:8000/query"
+THREAD_ID = "eval-thread"
 
-from app.intent_classifier import classify_intent
-from app.intent_schema import IntentLabel
-from app.router import route_query
+input_file = "evaluation/questions.csv"
+output_file = "evaluation/results.csv"
 
+results = []
 
-def run_eval():
-    total = 0
-    intent_correct = 0
-    escalation_correct = 0
+with open(input_file, newline="", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        query = row["query"]
 
-    with open("evaluation/test_cases.csv", newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
+        payload = {
+            "query": query,
+            "thread_id": THREAD_ID
+        }
 
-        def _normalize_expected(s: str) -> str:
-            if not s:
-                return "OTHER"
-            s = s.lower().strip()
-            if "refund" in s:
-                return "REFUND"
-            if "order" in s or "order_status" in s or "order_lookup" in s:
-                return "ORDER_STATUS"
-            if "policy" in s or "return" in s or "return_policy" in s:
-                return "POLICY"
-            if s in ("other", "none", "user_query"):
-                return "OTHER"
-            # default
-            return "OTHER"
+        print(f"➡️ Testing: {query}")
 
-        for row in reader:
-            # support both flat rows (query, expected_intent, ...) and test rows (test_id,user_query,intent,...)
-            total += 1
-            if row.get("user_query"):
-                query = row.get("user_query")
-                expected_raw = row.get("intent") or row.get("expected_intent") or ""
-                expected_intent = _normalize_expected(expected_raw)
-                expected_escalation = (row.get("expected_action") == "escalate") or (row.get("expected_escalation") == "true")
-            else:
-                query = row.get("query")
-                expected_raw = row.get("expected_intent") or ""
-                expected_intent = _normalize_expected(expected_raw)
-                expected_escalation = (row.get("expected_escalation") == "true")
+        resp = requests.post(API_URL, json=payload)
 
-            if not query:
-                continue
+        if resp.status_code != 200:
+            results.append({
+                "id": row["id"],
+                "query": query,
+                "error": resp.text
+            })
+            continue
 
-            intent = classify_intent(query)
-            predicted_intent = intent.intent
-            result = route_query(query)
+        data = resp.json()
 
-            # Intent accuracy
-            if predicted_intent.name == expected_intent:
-                intent_correct += 1
+        results.append({
+            "id": row["id"],
+            "query": query,
+            "final_answer": data.get("final_answer"),
+            "decision": data.get("decision"),
+            "intent": str(data.get("intent")),
+            "confidence": data.get("confidence"),
+            "escalate": data.get("escalate")
+        })
 
-            # Escalation accuracy
-            escalated = predicted_intent == IntentLabel.REFUND or "escalate" in str(result).lower() or (row.get("expected_action") == "escalate")
-            if escalated == expected_escalation:
-                escalation_correct += 1
+        time.sleep(0.5)  # avoid rate issues
 
-            print(f"\nQUERY: {query}")
-            print(f"Predicted Intent: {predicted_intent.name} | Expected: {expected_intent}")
-            print(f"Escalated: {escalated} | Expected: {expected_escalation}")
+# Save results
+with open(output_file, "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(
+        f,
+        fieldnames=results[0].keys()
+    )
+    writer.writeheader()
+    writer.writerows(results)
 
-    print("\n====================")
-    print("EVALUATION SUMMARY")
-    print("====================")
-    print(f"Total cases: {total}")
-    print(f"Intent Accuracy: {intent_correct / total:.2%}")
-    print(f"Escalation Accuracy: {escalation_correct / total:.2%}")
+print("✅ Evaluation completed. Results saved to evaluation/results.csv")
 
-
-if __name__ == "__main__":
-    run_eval()

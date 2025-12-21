@@ -1,3 +1,5 @@
+from langsmith import traceable
+
 from app.intent_schema import IntentLabel
 from app.intent_classifier import classify_intent
 from app.rag.rag_answer import answer_question
@@ -44,6 +46,7 @@ def is_refund_question(query: str) -> bool:
     # Default: treat ambiguous refund queries as questions first
     return True
 
+@traceable(name="route_query")
 def route_query(query: str, extra_context: str | None = None) -> dict:
 
     """
