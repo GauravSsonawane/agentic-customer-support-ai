@@ -54,8 +54,9 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT_DIR))
 
-from app.agent_graph import build_graph
 from langgraph.types import Command
+
+from app.agent_graph import build_graph
 
 graph = build_graph()
 
@@ -86,7 +87,9 @@ graph = build_graph()
 
 print("\nADMIN: approving refund after restart...\n")
 result = None
-for chunk in graph.stream(Command(resume=True), config={"configurable": {"thread_id": thread_id}}):
+for chunk in graph.stream(
+    Command(resume=True), config={"configurable": {"thread_id": thread_id}}
+):
     print("STREAM CHUNK:", chunk)
     result = chunk
 

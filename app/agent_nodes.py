@@ -1,16 +1,12 @@
 import re
-from app.observability import trace_event
+
 from langgraph.types import interrupt
 
 from app.agent_logger import log_step
-
 from app.llm_multi_intent_classifier import classify_multi_intent
-from app.intent_classifier import classify_intent
-from app.intent import Intent
+from app.observability import trace_event
 from app.rag.rag_answer import answer_question
 from app.tools.order_lookup import lookup_order
-from app.llm import get_llm
-
 
 
 def analyze_node(state):
@@ -20,8 +16,6 @@ def analyze_node(state):
 
     multi_intent = classify_multi_intent(query)
 
-
-
     return {
         **state,
         "intents": multi_intent.intents,
@@ -29,7 +23,6 @@ def analyze_node(state):
         "intent_reason": multi_intent.reason,
         "escalate": multi_intent.chosen_intent.name == "REFUND",
     }
-
 
 
 def policy_node(state):
@@ -50,7 +43,6 @@ def policy_node(state):
         **state,
         "response": result["answer"],
     }
-
 
 
 def order_node(state):
@@ -104,5 +96,3 @@ def refund_node(state):
             **state,
             "response": "Refund request denied.",
         }
-
-

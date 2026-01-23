@@ -14,10 +14,13 @@ def chat():
     return {"message": "Chat endpoint placeholder"}
 
 
+from app.schemas import QueryRequest
+
+
 @router.post("/query")
-def query(payload: dict):
-    query_text = payload.get("query")
-    thread_id = payload.get("thread_id")
+def query(payload: QueryRequest):
+    query_text = payload.query
+    thread_id = payload.thread_id
 
     if not query_text or not thread_id:
         return {
@@ -43,10 +46,7 @@ def query(payload: dict):
     # --------------------------------------------------
     # 2️⃣ STORE USER MESSAGE
     # --------------------------------------------------
-    state["messages"].append({
-        "role": "user",
-        "content": query_text
-    })
+    state["messages"].append({"role": "user", "content": query_text})
 
     # --------------------------------------------------
     # 3️⃣ RUN AGENT LOGIC (resume clarification if needed)
@@ -61,14 +61,12 @@ def query(payload: dict):
             # 🔑 Pass clarification separately as context
             result = route_query(
                 clarified_query,
-                extra_context=f"User clarified that the product was: {query_text}"
+                extra_context=f"User clarified that the product was: {query_text}",
             )
         else:
             result = route_query(query_text)
 
     except Exception as e:
-        # Keep a minimal, UI-friendly response shape and log the error server-side.
-        # The UI will show a generic error but we keep logs for debugging.
         import logging
         logging.exception("Error while routing query: %s", query_text)
 
@@ -105,18 +103,16 @@ def query(payload: dict):
     # --------------------------------------------------
     # 5️⃣ STORE ASSISTANT MESSAGE
     # --------------------------------------------------
-    state["messages"].append({
-        "role": "assistant",
-        "content": result.get("final_answer")
-    })
+    state["messages"].append(
+        {"role": "assistant", "content": result.get("final_answer")}
+    )
 
     state["last_intent"] = str(result.get("intent"))
     state["last_decision"] = result.get("decision")
 
     # 🚫 Do NOT escalate while clarification is pending
     state["pending_human"] = (
-        False if state["pending_clarification"]
-        else result.get("escalate", False)
+        False if state["pending_clarification"] else result.get("escalate", False)
     )
 
     # --------------------------------------------------

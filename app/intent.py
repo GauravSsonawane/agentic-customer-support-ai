@@ -6,4 +6,3 @@ class Intent(str, Enum):
     ORDER_STATUS = "order_status"
     REFUND = "refund"
     OTHER = "other"
-

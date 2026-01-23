@@ -2,9 +2,9 @@ import streamlit as st
 import sys
 from pathlib import Path
 import requests
-import json
-from datetime import datetime
 import time
+from datetime import datetime
+import os
 
 # -------------------------------
 # Setup PYTHONPATH
@@ -12,59 +12,14 @@ import time
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR))
 
+from ui.components.utils import normalize_intent, CUSTOM_CSS
+from ui.components.sidebar import render_sidebar, render_metrics
+from ui.components.chat import render_chat_history
+
 # -------------------------------
 # Backend API URL
 # -------------------------------
-API_URL = "http://localhost:8000/query"
-
-# -------------------------------
-# Helpers
-# -------------------------------
-def normalize_intent(intent):
-    if intent is None:
-        return None
-
-    if hasattr(intent, "intent"):
-        return {
-            "label": intent.intent.value,
-            "confidence": intent.confidence,
-            "reason": intent.reason,
-        }
-
-    if hasattr(intent, "value"):
-        return {
-            "label": intent.value,
-            "confidence": "N/A",
-            "reason": "Rule-based routing",
-        }
-
-    if isinstance(intent, str):
-        return {
-            "label": intent,
-            "confidence": "N/A",
-            "reason": "Backend fallback",
-        }
-
-    return None
-
-def get_intent_color(intent_label):
-    """Return color based on intent type"""
-    if not intent_label:
-        return "#6c757d"
-    
-    intent_lower = intent_label.lower()
-    if any(word in intent_lower for word in ["refund", "return", "cancel"]):
-        return "#dc3545"  # Red
-    elif any(word in intent_lower for word in ["shipping", "delivery", "track"]):
-        return "#17a2b8"  # Teal
-    elif any(word in intent_lower for word in ["product", "item", "stock"]):
-        return "#28a745"  # Green
-    elif any(word in intent_lower for word in ["account", "login", "password"]):
-        return "#6f42c1"  # Purple
-    elif any(word in intent_lower for word in ["pricing", "price", "discount"]):
-        return "#fd7e14"  # Orange
-    else:
-        return "#007bff"  # Blue
+API_URL = os.getenv("API_URL", "http://localhost:8070/query")
 
 # -------------------------------
 # Page Config & Custom CSS
@@ -75,8 +30,11 @@ st.set_page_config(
     page_icon="🤖",
     initial_sidebar_state="expanded"
 )
+
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
 # -------------------------------
-# Session State Initialization (FIX)
+# Session State Initialization
 # -------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -84,157 +42,10 @@ if "messages" not in st.session_state:
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = "ui-thread-001"
 
-# Custom CSS for beautiful UI
-st.markdown("""
-<style>
-    /* Main container styling */
-    .main {
-        padding: 1rem 2rem;
-    }
-    
-    /* Custom button styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.5rem 2rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
-    }
-    
-    /* Text input styling */
-    .stTextInput > div > div > input {
-        border-radius: 10px;
-        border: 2px solid #e2e8f0;
-        padding: 0.75rem 1rem;
-    }
-    
-    /* Chat bubble styling */
-    .user-bubble {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 20px 20px 5px 20px;
-        margin: 0.5rem 0;
-        max-width: 80%;
-        margin-left: auto;
-        box-shadow: 0 4px 6px rgba(102, 126, 234, 0.1);
-    }
-    
-    .assistant-bubble {
-        background: #f8fafc;
-        color: #2d3748;
-        padding: 1rem 1.5rem;
-        border-radius: 20px 20px 20px 5px;
-        margin: 0.5rem 0;
-        max-width: 80%;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Sidebar styling */
-    .sidebar .sidebar-content {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-    
-    /* Metric cards */
-    .metric-card {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border-left: 4px solid;
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.3s ease-out;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # -------------------------------
 # Sidebar
 # -------------------------------
-with st.sidebar:
-    st.title("⚙️ Settings")
-    
-    st.markdown("---")
-    
-    # Thread ID management
-    st.markdown("### Thread Management")
-    thread_id = st.text_input(
-        "Conversation Thread ID",
-        value=st.session_state.get("thread_id", "ui-thread-001"),
-        help="Unique ID for this conversation thread"
-    )
-    st.session_state.thread_id = thread_id
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🆕 New Thread"):
-            st.session_state.thread_id = f"thread-{int(time.time())}"
-            st.session_state.messages = []
-            st.rerun()
-    
-    with col2:
-        if st.button("🗑️ Clear Chat"):
-            st.session_state.messages = []
-            st.rerun()
-    
-    st.markdown("---")
-    
-    # System stats
-    st.markdown("### 📊 Statistics")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.metric(
-            "Messages",
-            len(st.session_state.get("messages", [])),
-            delta=None
-        )
-    
-    with col2:
-        st.metric(
-            "Thread ID",
-            thread_id[-6:],
-            delta=None
-        )
-    
-    # Intent distribution (sample)
-    st.markdown("### 🎯 Common Intents")
-    intents = {
-        "Refund/Return": get_intent_color("refund"),
-        "Shipping": get_intent_color("shipping"),
-        "Product Info": get_intent_color("product"),
-        "Account": get_intent_color("account"),
-        "Pricing": get_intent_color("pricing")
-    }
-    
-    for intent_name, color in intents.items():
-        st.markdown(
-            f'<div style="background:{color}20; padding:0.5rem; '
-            f'border-radius:5px; margin:0.25rem 0; border-left:3px solid {color}">'
-            f'<span style="color:{color}; font-weight:600">●</span> {intent_name}'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-    
-    st.markdown("---")
-    st.caption("🔗 Connected to backend API")
-    st.caption(f"📡 Endpoint: `{API_URL}`")
+render_sidebar()
 
 # -------------------------------
 # Main Content
@@ -253,150 +64,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Three-column layout for stats
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    with st.container():
-        st.markdown('<div class="metric-card" style="border-left-color: #667eea;">', unsafe_allow_html=True)
-        st.metric("Active Thread", st.session_state.thread_id.split('-')[-1])
-        st.caption("Current conversation")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-with col2:
-    with st.container():
-        st.markdown('<div class="metric-card" style="border-left-color: #28a745;">', unsafe_allow_html=True)
-        total_msgs = len(st.session_state.get("messages", []))
-        user_msgs = len([m for m in st.session_state.get("messages", []) if m["role"] == "user"])
-        st.metric("Messages", total_msgs, delta=f"{user_msgs} from user")
-        st.caption("Conversation volume")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-with col3:
-    with st.container():
-        st.markdown('<div class="metric-card" style="border-left-color: #fd7e14;">', unsafe_allow_html=True)
-        st.metric("API Status", "Connected" if API_URL else "Disconnected")
-        st.caption("Backend connection")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("---")
+render_metrics(API_URL)
 
 # -------------------------------
 # Conversation History
 # -------------------------------
-st.markdown("### 💬 Conversation History")
-
-# Check if conversation is empty
-if not st.session_state.get("messages"):
-    st.info("💭 No messages yet. Start a conversation below!")
-else:
-    # Display conversation with beautiful bubbles
-    for i, msg in enumerate(st.session_state.messages):
-        # Create columns for avatar and message
-        col1, col2 = st.columns([1, 15])
-        
-        with col1:
-            if msg["role"] == "user":
-                st.markdown("""
-                <div style="background: #667eea; color: white; width: 40px; height: 40px; 
-                            border-radius: 50%; display: flex; align-items: center; 
-                            justify-content: center; font-weight: bold; margin-top: 10px;">
-                    👤
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown("""
-                <div style="background: #10b981; color: white; width: 40px; height: 40px; 
-                            border-radius: 50%; display: flex; align-items: center; 
-                            justify-content: center; font-weight: bold; margin-top: 10px;">
-                    🤖
-                </div>
-                """, unsafe_allow_html=True)
-        
-        with col2:
-            if msg["role"] == "user":
-                st.markdown(f"""
-                <div class="user-bubble fade-in">
-                    <div style="font-weight: 600; margin-bottom: 4px;">You</div>
-                    <div>{msg["content"]}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                <div class="assistant-bubble fade-in">
-                    <div style="font-weight: 600; margin-bottom: 4px;">Assistant</div>
-                    <div>{msg["content"]}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Meta information expander with improved styling
-                if msg.get("meta"):
-                    with st.expander("🔍 **View Analysis Details**", expanded=False):
-                        meta = msg["meta"]
-                        
-                        intent_label = None
-                        if isinstance(meta.get("intent"), dict):
-                            intent_label = meta["intent"].get("label")
-                        elif isinstance(meta.get("intent"), str):
-                            intent_label = meta["intent"]
-
-                        # 🔒 SAFETY CHECK (THIS IS THE IMPORTANT PART)
-                        if intent_label:
-                            intent_color = get_intent_color(intent_label)
-                            st.markdown(f"""
-                            <div style="background: {intent_color}20; padding: 0.75rem; 
-                                        border-radius: 8px; border-left: 4px solid {intent_color}; 
-                                        margin-bottom: 1rem;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="color: {intent_color}; font-size: 1.2em;">•</span>
-                                    <div>
-                                        <div style="font-weight: 600; color: {intent_color};">
-                                            {intent_label}
-                                        </div>
-                                        <div style="font-size: 0.9em; color: #6c757d;">
-                                            Detected Intent
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)                   
-                        
-                        # Confidence and reason in columns
-                        if meta.get("confidence") or meta.get("reason"):
-                            col_a, col_b = st.columns(2)
-                            
-                            with col_a:
-                                if meta.get("confidence") is not None:
-                                    st.metric("Confidence Score", meta["confidence"])
-                            
-                            with col_b:
-                                if meta.get("reason"):
-                                    st.info(f"**Reason:** {meta['reason']}")
-                        
-                        # Decision
-                        if meta.get("decision"):
-                            st.success(f"**Decision Made:** {meta['decision']}")
-                        
-                        # Sources with copy button
-                        sources = meta.get("sources")
-
-                        if isinstance(sources, str) and sources.strip():
-                            st.markdown("**📚 Sources Used:**")
-
-                            # Add copy button
-                            copy_col, view_col = st.columns([3, 1])
-                            with copy_col:
-                                st.code(sources)
-                            with view_col:
-                                if st.button("📋 Copy", key=f"copy_{i}"):
-                                    st.toast("Copied to clipboard!", icon="✅")
-
-                        st.markdown("---")
-
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-
-st.markdown("---")
+render_chat_history()
 
 # -------------------------------
 # User Input Section
@@ -551,4 +224,3 @@ st.markdown("""
     </button>
 </div>
 """, unsafe_allow_html=True)
-

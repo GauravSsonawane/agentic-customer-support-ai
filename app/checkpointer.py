@@ -11,11 +11,11 @@ CHECKPOINT_DIR.mkdir(exist_ok=True)
 CHECKPOINT_DB = CHECKPOINT_DIR / "agent_state.db"
 
 try:
-	from langgraph.checkpoint.sqlite import SqliteSaver
+    from langgraph.checkpoint.sqlite import SqliteSaver
 
-	checkpointer = SqliteSaver.from_path(str(CHECKPOINT_DB))
+    checkpointer = SqliteSaver.from_path(str(CHECKPOINT_DB))
 except Exception:
-	from langgraph.checkpoint.memory import InMemorySaver
+    from langgraph.checkpoint.memory import InMemorySaver
 
-	# InMemorySaver does not persist across process restarts.
-	checkpointer = InMemorySaver()
+    # InMemorySaver does not persist across process restarts.
+    checkpointer = InMemorySaver()

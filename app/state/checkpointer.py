@@ -1,8 +1,9 @@
-import sqlite3
 import json
+import sqlite3
 from datetime import datetime
 
 DB_PATH = "data/agent_state.db"
+
 
 class SQLiteCheckpointer:
     def __init__(self, db_path=DB_PATH):
@@ -24,8 +25,7 @@ class SQLiteCheckpointer:
     def load(self, thread_id: str) -> dict | None:
         conn = sqlite3.connect(self.db_path)
         row = conn.execute(
-            "SELECT state_json FROM agent_state WHERE thread_id = ?",
-            (thread_id,)
+            "SELECT state_json FROM agent_state WHERE thread_id = ?", (thread_id,)
         ).fetchone()
         conn.close()
 
@@ -36,16 +36,15 @@ class SQLiteCheckpointer:
 
     def save(self, thread_id: str, state: dict):
         conn = sqlite3.connect(self.db_path)
-        conn.execute("""
+        conn.execute(
+            """
         INSERT INTO agent_state (thread_id, state_json, updated_at)
         VALUES (?, ?, ?)
         ON CONFLICT(thread_id) DO UPDATE SET
             state_json=excluded.state_json,
             updated_at=excluded.updated_at
-        """, (
-            thread_id,
-            json.dumps(state),
-            datetime.utcnow().isoformat()
-        ))
+        """,
+            (thread_id, json.dumps(state), datetime.utcnow().isoformat()),
+        )
         conn.commit()
         conn.close()

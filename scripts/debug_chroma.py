@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Ensure project root is on sys.path so `app` imports work when running the script
 ROOT_DIR = Path(__file__).resolve().parents[1]

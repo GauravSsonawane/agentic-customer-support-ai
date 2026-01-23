@@ -6,7 +6,6 @@ sys.path.append(str(ROOT_DIR))
 
 from app.agent_graph import build_graph
 
-
 graph = build_graph()
 
 queries = [
@@ -26,5 +25,3 @@ for q in queries:
         }
     )
     print("RESPONSE:", result.get("response"))
-
-

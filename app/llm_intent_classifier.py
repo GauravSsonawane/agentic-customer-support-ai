@@ -1,7 +1,7 @@
-from app.llm import get_llm
-from app.intent_schema import IntentResult, IntentLabel
 import json
 
+from app.intent_schema import IntentLabel, IntentResult
+from app.llm import get_llm
 
 SYSTEM_PROMPT = """
 You are an intent classification system for a customer support agent.
@@ -28,7 +28,7 @@ Rules:
 """
 
 
-EXAMPLES = '''
+EXAMPLES = """
 User: "What is the return policy?"
 Output:
 {
@@ -84,7 +84,7 @@ Output:
     "confidence": 0.6,
     "reason": "Greeting"
 }
-'''
+"""
 
 
 def classify_intent_llm(query: str) -> IntentResult:
@@ -100,7 +100,7 @@ def classify_intent_llm(query: str) -> IntentResult:
     response = llm.invoke(messages)
 
     def _extract_json(text: str):
-        import json, re
+        import re
 
         # Try direct parse first
         try:
@@ -128,11 +128,19 @@ def classify_intent_llm(query: str) -> IntentResult:
     # If parsing failed, use a simple keyword-based heuristic as a final fallback
     q = query.lower()
     if "refund" in q or "money back" in q:
-        return IntentResult(intent=IntentLabel.REFUND, confidence=0.8, reason="Keyword match: refund")
+        return IntentResult(
+            intent=IntentLabel.REFUND, confidence=0.8, reason="Keyword match: refund"
+        )
     if "return" in q or "return policy" in q:
-        return IntentResult(intent=IntentLabel.POLICY, confidence=0.75, reason="Keyword match: return")
+        return IntentResult(
+            intent=IntentLabel.POLICY, confidence=0.75, reason="Keyword match: return"
+        )
     if "order" in q or "track" in q or "where is my" in q:
-        return IntentResult(intent=IntentLabel.ORDER_STATUS, confidence=0.7, reason="Keyword match: order status")
+        return IntentResult(
+            intent=IntentLabel.ORDER_STATUS,
+            confidence=0.7,
+            reason="Keyword match: order status",
+        )
 
     return IntentResult(
         intent=IntentLabel.OTHER,

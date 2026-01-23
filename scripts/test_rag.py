@@ -1,5 +1,6 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
 import ollama
 
 # Ensure project root is on sys.path so `app` imports work when running the script

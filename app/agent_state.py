@@ -1,4 +1,5 @@
-from typing import TypedDict, Optional
+from typing import Optional, TypedDict
+
 from app.intent import Intent
 
 
@@ -7,4 +8,3 @@ class AgentState(TypedDict):
     intent: Optional[Intent]
     response: Optional[str]
     escalate: bool
-

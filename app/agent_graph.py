@@ -1,13 +1,14 @@
-from app.checkpointer import checkpointer
-from langgraph.graph import StateGraph, END
-from app.agent_state import AgentState
+from langgraph.graph import END, StateGraph
+
 from app.agent_nodes import (
     analyze_node,
-    policy_node,
-    order_node,
     escalation_node,
+    order_node,
+    policy_node,
     refund_node,
 )
+from app.agent_state import AgentState
+from app.checkpointer import checkpointer
 from app.intent import Intent
 
 
@@ -16,7 +17,7 @@ def route_from_analyze(state):
         return "escalate"
 
     if state["intent"] == Intent.REFUND:
-            return "refund"
+        return "refund"
 
     if state["intent"] == Intent.POLICY:
         return "policy"
@@ -38,10 +39,7 @@ def build_graph():
 
     workflow.set_entry_point("analyze")
 
-    workflow.add_conditional_edges(
-        "analyze",
-        route_from_analyze
-    )
+    workflow.add_conditional_edges("analyze", route_from_analyze)
 
     workflow.add_edge("policy", END)
     workflow.add_edge("order", END)

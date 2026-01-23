@@ -1,6 +1,7 @@
-import requests
 import csv
 import time
+
+import requests
 
 API_URL = "http://localhost:8000/query"
 
@@ -20,29 +21,27 @@ QUESTIONS = [
 results = []
 
 for q in QUESTIONS:
-    payload = {
-        "query": q,
-        "thread_id": "eval-thread"
-    }
+    payload = {"query": q, "thread_id": "eval-thread"}
 
     r = requests.post(API_URL, json=payload)
     data = r.json()
 
-    results.append({
-        "question": q,
-        "answer": data.get("final_answer"),
-        "decision": data.get("decision"),
-        "escalate": data.get("escalate"),
-        "confidence": data.get("confidence"),
-    })
+    results.append(
+        {
+            "question": q,
+            "answer": data.get("final_answer"),
+            "decision": data.get("decision"),
+            "escalate": data.get("escalate"),
+            "confidence": data.get("confidence"),
+        }
+    )
 
     time.sleep(0.5)  # be nice to your local LLM 😄
 
 # Save results
 with open("policy_eval_results.csv", "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(
-        f,
-        fieldnames=["question", "answer", "decision", "escalate", "confidence"]
+        f, fieldnames=["question", "answer", "decision", "escalate", "confidence"]
     )
     writer.writeheader()
     writer.writerows(results)

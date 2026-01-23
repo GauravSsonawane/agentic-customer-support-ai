@@ -1,9 +1,10 @@
 import asyncio
 import logging
+
 import ollama
 
-from app.llm import get_llm
 from app.config import OLLAMA_MODEL
+from app.llm import get_llm
 from app.rag.chroma_client import get_collection
 
 logger = logging.getLogger(__name__)
@@ -24,11 +25,15 @@ async def retrieve_context_async(query: str, k: int = 5) -> str:
 
     def _embed_and_query():
         try:
+            # Use specific client to ensure we hit the right host (Docker vs Local)
+            from app.config import OLLAMA_BASE_URL
+            client = ollama.Client(host=OLLAMA_BASE_URL)
+
             # Compute embedding via Ollama
-            embedding = ollama.embeddings(
+            embedding = client.embeddings(
                 model=OLLAMA_MODEL,
                 prompt=query,
-           )["embedding"]
+            )["embedding"]
 
             results = collection.query(
                 query_embeddings=[embedding],
@@ -43,7 +48,7 @@ async def retrieve_context_async(query: str, k: int = 5) -> str:
                 logger.debug("- %s", preview.replace("\n", " "))
 
             return "\n\n".join(docs)
-        except Exception as e:
+        except Exception:
             logger.exception("Error during embedding or Chroma query")
             # Return empty context so downstream code can handle gracefully
             return ""
@@ -81,10 +86,7 @@ Question:
     loop = asyncio.get_running_loop()
 
     try:
-        response = await loop.run_in_executor(
-            None,
-            lambda: llm.invoke(prompt)
-        )
+        response = await loop.run_in_executor(None, lambda: llm.invoke(prompt))
 
         answer = response.content.strip()
 
@@ -117,6 +119,7 @@ def answer_question(query: str) -> dict:
 # ------------------------------------------------
 # Confidence helper (unchanged)
 # ------------------------------------------------
+
 
 def is_weak_answer(answer: str) -> bool:
     """

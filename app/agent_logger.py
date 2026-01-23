@@ -1,8 +1,8 @@
-def log_step(node_name: str, state: dict):
-    print("\n" + "=" * 50)
-    print(f"NODE: {node_name}")
-    print("STATE:")
-    for k, v in state.items():
-        print(f"  {k}: {v}")
-    print("=" * 50)
+import logging
 
+logger = logging.getLogger(__name__)
+
+
+def log_step(node_name: str, state: dict):
+    logger.info(f"NODE: {node_name}")
+    logger.debug(f"STATE: {state}")

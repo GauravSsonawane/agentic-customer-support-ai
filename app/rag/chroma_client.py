@@ -1,5 +1,5 @@
-from pathlib import Path
 import threading
+from pathlib import Path
 
 # Centralized Chroma client helper for the project
 CHROMA_DIR = Path("data/embeddings").resolve()
@@ -23,6 +23,7 @@ _CLIENT_LOCK = threading.Lock()
 
 
 if _HAS_CHROMADB:
+
     def get_client() -> chromadb.PersistentClient:
         global _CLIENT
         if _CLIENT is None:
@@ -31,11 +32,9 @@ if _HAS_CHROMADB:
                     _CLIENT = chromadb.PersistentClient(path=str(CHROMA_DIR))
         return _CLIENT
 
-
     def get_collection(name: str):
         client = get_client()
         return client.get_or_create_collection(name)
-
 
     def persist():
         try:
@@ -53,7 +52,9 @@ else:
             self._embeddings = []
             self._ids = []
 
-        def add(self, *, documents=None, metadatas=None, embeddings=None, ids=None, **kwargs):
+        def add(
+            self, *, documents=None, metadatas=None, embeddings=None, ids=None, **kwargs
+        ):
             documents = documents or []
             metadatas = metadatas or [None] * len(documents)
             embeddings = embeddings or [None] * len(documents)
@@ -70,11 +71,12 @@ else:
         def peek(self, limit: int = 5):
             return {"documents": self._documents[:limit]}
 
-        def query(self, *, query_embeddings=None, query_texts=None, n_results=3, **kwargs):
+        def query(
+            self, *, query_embeddings=None, query_texts=None, n_results=3, **kwargs
+        ):
             # naive similarity: return first n_results documents
             docs = self._documents[:n_results]
             return {"documents": [docs], "metadatas": [self._metadatas[:n_results]]}
-
 
     class _InMemoryClient:
         def __init__(self):
@@ -88,17 +90,13 @@ else:
         def persist(self):
             return None
 
-
     _IN_MEMORY_CLIENT = _InMemoryClient()
-
 
     def get_client():
         return _IN_MEMORY_CLIENT
 
-
     def get_collection(name: str):
         return _IN_MEMORY_CLIENT.get_or_create_collection(name)
-
 
     def persist():
         return None

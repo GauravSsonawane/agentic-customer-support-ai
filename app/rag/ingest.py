@@ -1,5 +1,6 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
 from pypdf import PdfReader
 
 # Ensure project root is on sys.path when running this file directly
@@ -8,12 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_core.documents import Document
 import ollama
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.rag.chroma_client import get_collection, persist
-
 
 DATA_DIR = Path("data/policies")
 
@@ -37,12 +37,11 @@ def load_pdfs():
                     metadata={
                         "source": pdf_path.name,
                         "page": page_num,
-                    }
+                    },
                 )
             )
 
     return documents
-
 
 
 def embed_texts(texts, model="llama3.1"):
@@ -60,10 +59,10 @@ def ingest():
         chunk_size=800,
         chunk_overlap=150,
         separators=[
-            "\n\n",   # paragraphs / sections
-            "\n",     # line breaks
-            ".",      # sentences
-            " ",      # words (last resort)
+            "\n\n",  # paragraphs / sections
+            "\n",  # line breaks
+            ".",  # sentences
+            " ",  # words (last resort)
         ],
     )
 
@@ -80,7 +79,6 @@ def ingest():
             chunk.metadata["topic"] = "damage"
 
         chunk.metadata["doc_type"] = "policy"
-
 
     collection = get_collection("policies")
 
@@ -104,5 +102,3 @@ def ingest():
 
 if __name__ == "__main__":
     ingest()
-
-

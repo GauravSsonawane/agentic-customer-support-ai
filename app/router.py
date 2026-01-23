@@ -1,9 +1,10 @@
 from langsmith import traceable
 
-from app.intent_schema import IntentLabel
 from app.intent_classifier import classify_intent
+from app.intent_schema import IntentLabel
 from app.rag.rag_answer import answer_question
 from app.tools.order_lookup import lookup_order
+
 
 def is_refund_question(query: str) -> bool:
     """
@@ -46,9 +47,9 @@ def is_refund_question(query: str) -> bool:
     # Default: treat ambiguous refund queries as questions first
     return True
 
+
 @traceable(name="route_query")
 def route_query(query: str, extra_context: str | None = None) -> dict:
-
     """
     Clean, confidence-aware router.
     Returns a unified response schema for UI + API.
@@ -64,7 +65,6 @@ def route_query(query: str, extra_context: str | None = None) -> dict:
     # 1️⃣ POLICY QUESTIONS (highest priority)
     # --------------------------------------------------
     if intent == IntentLabel.POLICY:
-
         rag_result = answer_question(query)
 
         answer = rag_result["answer"]
@@ -99,7 +99,6 @@ def route_query(query: str, extra_context: str | None = None) -> dict:
     # 2️⃣ ORDER STATUS
     # --------------------------------------------------
     if intent == IntentLabel.ORDER_STATUS:
-
         order_id = next((w for w in query.split() if w.startswith("ORD")), None)
 
         if not order_id:
@@ -117,11 +116,10 @@ def route_query(query: str, extra_context: str | None = None) -> dict:
             "decision": "order_lookup",
         }
 
-# --------------------------------------------------
-# 3️⃣ REFUND (question → policy first, action → escalate)
-# --------------------------------------------------
+    # --------------------------------------------------
+    # 3️⃣ REFUND (question → policy first, action → escalate)
+    # --------------------------------------------------
     if intent == IntentLabel.REFUND:
-
         # 🟢 Refund-related QUESTION → try POLICY RAG first
         if is_refund_question(query):
             rag_result = answer_question(query)
@@ -163,7 +161,6 @@ def route_query(query: str, extra_context: str | None = None) -> dict:
             "decision": "refund_requires_approval",
             "escalate": True,
         }
-
 
     # --------------------------------------------------
     # 4️⃣ OTHER / FALLBACK

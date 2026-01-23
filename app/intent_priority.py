@@ -6,4 +6,3 @@ INTENT_PRIORITY = {
     IntentLabel.POLICY: 2,
     IntentLabel.OTHER: 1,
 }
-

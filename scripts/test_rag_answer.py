@@ -7,7 +7,6 @@ sys.path.append(str(ROOT_DIR))
 
 from app.rag.rag_answer import answer_question
 
-
 query = "What is the return policy?"
 
 result = answer_question(query)

@@ -1,8 +1,8 @@
-from app.llm import get_llm
-from app.intent_schema import IntentResult, MultiIntentResult, IntentLabel
-from app.intent_priority import INTENT_PRIORITY
 import json
 
+from app.intent_priority import INTENT_PRIORITY
+from app.intent_schema import IntentLabel, IntentResult, MultiIntentResult
+from app.llm import get_llm
 
 SYSTEM_PROMPT = """
 You are an intent detection system for customer support.
@@ -28,7 +28,7 @@ Rules:
 """
 
 
-EXAMPLES = '''
+EXAMPLES = """
 User: "I want a refund for my order ORD123"
 Output:
 {
@@ -53,7 +53,7 @@ Output:
         {"intent": "POLICY", "confidence": 0.92, "reason": "Asks about return eligibility for damaged item"}
     ]
 }
-'''
+"""
 
 
 def classify_multi_intent(query: str) -> MultiIntentResult:
@@ -68,7 +68,7 @@ def classify_multi_intent(query: str) -> MultiIntentResult:
     response = llm.invoke(messages)
 
     def _extract_json(text: str):
-        import json, re
+        import re
 
         try:
             return json.loads(text)
